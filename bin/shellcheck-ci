@@ -1,0 +1,7 @@
+#!/bin/bash
+set -e
+mapfile -t files < <(git ls-files)
+find "${files[@]}" -maxdepth 0 -type f -exec file '{}' \; \
+    | grep 'shell script' \
+    | cut -d: -f1 \
+    | exec xargs shellcheck "$@" --
