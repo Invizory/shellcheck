@@ -1,7 +1,38 @@
 #!/bin/bash
 set -e
-mapfile -t files < <(git ls-files)
-find "${files[@]}" -maxdepth 0 -type f -exec file '{}' \; \
-    | grep 'shell script' \
-    | cut -d: -f1 \
-    | exec xargs shellcheck "$@" --
+
+function main {
+    local args=() format=""
+    while [ $# -gt 0 ]; do
+        local current="$1"
+        shift
+        case "$current" in
+            --junit)
+                format="junit"
+                ;;
+            *)
+                args+=("$current")
+                ;;
+        esac
+    done
+
+    mapfile -t files < <(git ls-files)
+    mapfile -t files < <(
+        find "${files[@]}" -maxdepth 0 -type f -exec file '{}' \; \
+        | grep 'shell script' \
+        | cut -d: -f1
+    )
+    case "$format" in
+        junit)
+            printf '%s\n' "${files[@]}" \
+                | exec xargs shellcheck --format=checkstyle "${args[@]}" -- \
+                | xmlstarlet tr /usr/share/shellcheck-ci/checkstyle2junit.xslt
+            ;;
+        *)
+            printf '%s\n' "${files[@]}" \
+                | exec xargs shellcheck "${args[@]}"
+            ;;
+    esac
+}
+
+main "$@"

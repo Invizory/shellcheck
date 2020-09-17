@@ -33,6 +33,24 @@ lint-shellcheck:
     - shellcheck-ci
 ```
 
+### GitLab CI with JUnit report
+
+```yaml
+lint-shellcheck:
+  stage: lint
+  image:
+    name: inviz/shellcheck
+    entrypoint: ["sh", "-c"]
+  script:
+    - shellcheck-ci --junit > shellcheck.xml
+  artifacts:
+    when: always
+    paths:
+      - shellcheck.xml
+    reports:
+      junit: shellcheck.xml
+```
+
 ## Copyright
 
 Copyright © 2019–2020 [Arthur Khashaev]. See [license] for details.
