@@ -22,6 +22,10 @@ function main {
         | grep 'shell script' \
         | cut -d: -f1
     )
+    if [ ${#files[@]} -eq 0 ]; then
+        >&2 echo "No scripts found."
+        exit
+    fi
     case "$format" in
         junit)
             printf '%s\n' "${files[@]}" \
